@@ -42,16 +42,7 @@ Usage: zql-bulk [options] (or use ZQLBULK_ env vars)
 Options:
   --help      Show help                                                [boolean]
   --version   Show version number                                      [boolean]
-  --action    Actions to execute (create, inserts...)        [string] [required]
-  --server    Server name or IP address                      [string] [required]
-  --port      Port number                                               [number]
-  --user      User name                                      [string] [required]
-  --password  Password                                                  [string]
-  --database  Database name                                  [string] [required]
-  --table     Table name                                     [string] [required]
-  --columns   Column names (can be *)                                   [string]
-  --where     Where clause to filter input rows                         [string]
-  --totable   Destination Table name                                    [string]
+ ...
 
 Missing required arguments: action, server, user, database, table
 ```
@@ -62,7 +53,7 @@ Missing required arguments: action, server, user, database, table
 Usando la acción `create`, puedes generar scripts SQL para crear tablas basadas en el esquema de una tabla existente.
 
 ```
-$ zql-bulk --action create --server 192.168.1.5 --user administrador --password 123456 
+$ zql-bulk --action create --server 192.168.1.5 --user administrador --password jfjfj
 --database MIBD --table Familias --columns *
 ```
 generará una salida similar a...
@@ -107,6 +98,16 @@ $ zql-bulk --action insert --server 192.168.1.5 --user administrador --password 
 --database MIBD --table Familias --columns 'familiaCod,nombre' > Familias.sql
 ```
 
+### Scripts para MIGRACIÓN de datos
+
+La acción `migrate` combina la creación de la tabla de destino y la inserción de datos desde la tabla de origen. 
+Es útil para migrar datos de una tabla a otra en un solo paso.
+
+```
+$ zql-bulk --action migrate --server 192.168.1.5 --user administrador --password 123456 
+--database MIBD --table Familias --columns '*' --totable FamiliasBackup > MigrateFamilias.sql
+```
+
 ### Archivo JSON con el contenido de las tablas
 
 Usando la acción `exportjson`, puedes generar un archivo JSON con el contenido de la tabla.
@@ -140,6 +141,8 @@ Puedes usar las opciones `--blobAsBase64`, `--blobAsSqlHex` o `--blobAsArray` pa
 Puedes usar la opcion `--where` para filtrar los datos que se consideran para exportan a JSON o INSERTs.
 
 Puedes usar la opción `--totable` para especificar una tabla de destino para las inserciones.
+
+Puedes usar la opción `--todialect` para especificar un dialecto SQL alternativo en la salida (por ejemplo, 'mssql', 'pg'...).
 
 ### Variables de entorno
 

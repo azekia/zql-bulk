@@ -1,11 +1,26 @@
 import { Connection, Request } from "tedious";
-
-function value2sqlexpresion(valor) {
+function dialectObjectName(name, dialect) {
+  switch (dialect) {
+    case "mssql":
+      return `[${name}]`;
+    case "pg":
+      return `"${name}"`;
+    case "mysql":
+      return `\`${name}\``;
+    default:
+      return `"${name}"`;
+  }
+}
+function value2sqlexpresion(valor, coldef, dialecto) {
   let tipo = typeof valor;
   let retorno;
   switch (tipo) {
     case "string":
       retorno = "'" + valor.replace(/'/g, "''") + "'";
+      break;
+    case "boolean": // para que entre por aquí un campo tinyint, hay que hacer convert(bit, campo)
+      if (dialecto === "pg") retorno = (valor ? 'true' : 'false');
+      else retorno = valor + "";
       break;
     case "number":
       retorno = valor + "";
@@ -73,7 +88,7 @@ function bufToBigint(buf) {
 }
 
 function sqlClauseForCreateTable(tablename, columnclauses) {
-  return `CREATE TABLE [${tablename}] (\n${columnclauses}\n) `;
+  return `CREATE TABLE [${tablename}] (\n${columnclauses}\n);\n `;
 }
 
 function sqlClauseForCreateColumn(col) {
@@ -84,12 +99,14 @@ function sqlClauseForCreateColumn(col) {
       if (col.colName == "timestamp") {
         return `[timestamp] TIMESTAMP`;
       } else {
-        return `[${col.colName}] BYNARY NULL`;
+        return `[${col.colName}] BINARY NULL`;
       }
     case 106:
       return `[${col.colName}] DECIMAL(${col.precision},${col.scale}) ${nullable}`;
     case 48:
       return `[${col.colName}] TINYINT ${nullable}`;
+    case 104:
+      return `[${col.colName}] BITN ${nullable}`;
     case 52:
       return `[${col.colName}] SMALLINT ${nullable}`;
     case 56:
@@ -199,4 +216,5 @@ export {
   addItem2ListComma,
   addItem2ListAnd,
   bufToBigint,
+  dialectObjectName,
 };

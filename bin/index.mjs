@@ -17,7 +17,7 @@ async function main() {
   const argv = yargs(hideBin(process.argv))
     .usage(usageTxt)
     .option("action", {
-      describe: "Actions to execute (create, inserts...) ",
+      describe: "Actions to execute (create, insert, migrate, exportjson) ",
       type: "string",
       demandOption: true,
     })
@@ -67,6 +67,11 @@ async function main() {
       type: "string",
       demandOption: false,
     })
+    .option("todialect", {
+      describe: "Destination SQL dialect (pg, mssql, mysql, sqlite, etc.)",
+      type: "string",
+      demandOption: false,
+    })
     .option("blobAsBase64", {
       describe: "activate to use base64 for BLOBs when export to json",
       type: "boolean",
@@ -99,6 +104,7 @@ async function main() {
     table: argv.table || process.env.ZQLBULK_TABLE,
     columns: argv.columns || process.env.ZQLBULK_COLUMNS || "*",
     totable: argv.totable || undefined,
+    todialect: argv.todialect || "mssql",
     where: argv.where || undefined,
     blobAsSqlHex: argv.blobAsSqlHex || undefined,
     blobAsBase64: argv.blobAsBase64 || undefined,
@@ -153,14 +159,6 @@ async function doAction(argumentos) {
       console.log(ej);
       done = true;
     } else console.log("--doJsonFromSelect returns nothing");
-  }
-  if (argumentos.action == "importjson") {
-    let jtt = undefined; //await doJsonToTable(argumentos);
-    if (jtt) {
-      console.log(`-- JSON TO TABLE ${argumentos.table} =============================================`);
-      console.log(jtt);
-      done = true;
-    } else console.log("--doJsonToTable returns nothing (NOT IMPLEMENTED)");
   }
 
   if (!done) console.log("--zql-bulk has done nothing (no --action?)");
